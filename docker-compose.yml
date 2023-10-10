@@ -1,0 +1,52 @@
+version: '3.7'
+
+services:
+    # container for the front app
+    app:
+        image: forphp7.4project
+        expose:
+            - "9000"
+            - "9003"
+        ports:
+            - "8000:80"
+        working_dir: /var/www/html
+        volumes:
+            - ./app:/var/www/html
+            - ./docker/server/apache/sites-enabled:/etc/apache2/sites-enabled
+            - ./docker/server/php/php.ini:/usr/local/etc/php/conf.d/extra-php-config.ini
+            - ./docker/xdebug/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+        depends_on:
+            - database
+    # database server
+    database:
+        healthcheck:
+            test: mysqladmin ping -h 127.0.0.1 -u root --password=$$MYSQL_ROOT_PASSWORD
+            interval: 5s
+            retries: 5
+        image: mysql
+        volumes:
+            - db_data:/var/lib/mysql
+            - ./docker/db/mariadb/my.cnf:/etc/mysql/conf.d/my.cnf
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: 'superSecr3t'
+            MYSQL_USER: 'app_user'
+            MYSQL_PASSWORD: 't3rceS'
+            MYSQL_DATABASE: 'database'
+    # phpmyadmin server
+    myadmin:
+        image: phpmyadmin/phpmyadmin:5
+        environment:
+            PMA_HOST: database
+        ports:
+            - "8080:80"
+        depends_on:
+            - database
+        volumes:
+            - db_admin_data:/var/www/html
+volumes:
+    db_data:
+    db_admin_data:
+networks:
+    inner_net:
