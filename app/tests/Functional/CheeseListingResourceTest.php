@@ -4,6 +4,7 @@ namespace App\Tests\Functional;
 
 use App\Entity\CheeseListing;
 use App\Factory\CheeseListingFactory;
+use App\Factory\CheeseNotificationFactory;
 use App\Factory\UserFactory;
 use App\Test\CustomApiTestCase;
 
@@ -65,6 +66,25 @@ class CheeseListingResourceTest extends CustomApiTestCase
             'json' => ['title' => 'updated']
         ]);
         $this->assertResponseStatusCodeSame(200);
+    }
+
+    public function testPublishCheeseListing()
+    {
+        $client = self::createClient();
+        $user = UserFactory::new()->create();
+
+        $cheeseListing = CheeseListingFactory::new()->create([
+            'owner' => $user,
+        ]);
+
+        $this->logIn($client, $user);
+        $client->request('PUT', '/api/cheeses/'.$cheeseListing->getId(), [
+            'json' => ['isPublished' => true]
+        ]);
+        $this->assertResponseStatusCodeSame(200);
+        $cheeseListing->refresh();
+        $this->assertTrue($cheeseListing->getIsPublished());
+        CheeseNotificationFactory::repository()->assertCount(1,'there should be one notification about being published');
     }
 
     public function testGetCheeseListingCollection()
