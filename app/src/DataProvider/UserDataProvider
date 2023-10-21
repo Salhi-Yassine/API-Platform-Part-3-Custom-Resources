@@ -1,0 +1,28 @@
+<?php
+namespace App\DataPersister;
+use ApiPlatform\Core\DataProvider\ContextAwareCollectionDataProviderInterface;
+use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
+use App\Entity\User;
+use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManager;
+
+class UserDataProvider implements  ContextAwareCollectionDataProviderInterface, RestrictedDataProviderInterface
+{
+    private $entityManager;
+    public function __construct(EntityManager $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+
+    public function getCollection(string $resourceClass, string $operationName = null, array $context = []) 
+    {
+        return $this->entityManager->getRepository(UserRepository::class)->findAll();
+    }
+
+    public function supports(string $resourceClass, string $operationName = null, array $context = []): bool 
+    {
+        return $resourceClass === User::class;
+    }
+
+
+}

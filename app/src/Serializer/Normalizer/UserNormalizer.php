@@ -27,6 +27,7 @@ class UserNormalizer implements ContextAwareNormalizerInterface, CacheableSuppor
      */
     public function normalize($object, $format = null, array $context = array()): array
     {
+        // if this user object  is connected add to the response fields with the group owner:read  
         $isOwner = $this->userIsOwner($object);
         if ($isOwner) {
             $context['groups'][] = 'owner:read';
@@ -34,11 +35,9 @@ class UserNormalizer implements ContextAwareNormalizerInterface, CacheableSuppor
 
         $context[self::ALREADY_CALLED] = true;
 
-        $data = $this->normalizer->normalize($object, $format, $context);
+        return $this->normalizer->normalize($object, $format, $context);
 
-        $data['isMe'] = $isOwner;
-
-        return $data;
+        
     }
 
     public function supportsNormalization($data, $format = null, array $context = [])
