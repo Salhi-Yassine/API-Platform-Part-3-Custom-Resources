@@ -8,7 +8,10 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-
+// we implement this interface instead of DataPersiterInterface because it
+// give use access to the 
+//   "collection_operation_name" => "post" or "item_operation_name" => "put"
+// we know if the the data is being updated or created 
 class UserDataPersister implements ContextAwareDataPersisterInterface
 {
     private $DecoratedDataPersister;
@@ -32,10 +35,11 @@ class UserDataPersister implements ContextAwareDataPersisterInterface
      */
     public function persist($data, array $context = [])
     {
-        dump($context);
+        // dump($context);
         if (($context['collection_operation_name'] ?? null) === 'put') {
             $this->loggerInterface->info(sprintf('User %s being updated', $data->getId()));
         }
+        //if there is no id sended back it mean we are creating a new user
         if (!$data->getId()) {
             // take any actions needed for a new user
             // send registration email
@@ -43,6 +47,7 @@ class UserDataPersister implements ContextAwareDataPersisterInterface
 
             $this->loggerInterface->info(sprintf('User %s just registered. Eureka!', $data->getEmail()));
         }
+        // if he send the password encode it
         if ($data->getPlainPassword()) {
             $data->setPassword(
                 $this->userPasswordEncoder->encodePassword($data, $data->getPlainPassword())

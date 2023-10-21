@@ -28,8 +28,10 @@ class CheeseListingDataPersister implements DataPersisterInterface
      */
     public function persist($data)
     {
+        // get the original data: the way it looked before it was changed by ApiPlatform
         $originalData = $this->entityManager->getUnitOfWork()->getOriginalEntityData($data);
-        $wasAlreadyPublished = $originalData['isPublished'] ?? false;
+        // dump($originalData);
+        $wasAlreadyPublished = $originalData['isPublished'] ?? false; // because if he create new data the array will be empty
         if ($data->getIsPublished() && !$wasAlreadyPublished) {
             $notification = new CheeseNotification($data, 'CheeseListing was created!');
             $this->entityManager->persist($notification);
