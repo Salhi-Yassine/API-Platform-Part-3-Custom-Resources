@@ -257,10 +257,7 @@ class User implements UserInterface
 
     public function getIsMe(): bool 
     {
-        if (null === $this->isMe) {
-            throw new \LogicException('the isMe field has not been Initialized yet!!');
-        }
-        return $this->isMe;
+        return $this->isMe ?? false;
     }
 
     public function setIsMe(bool $isMe)
