@@ -8,6 +8,8 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\Security\Core\Security;
+
 // we implement this interface instead of DataPersiterInterface because it
 // give use access to the 
 //   "collection_operation_name" => "post" or "item_operation_name" => "put"
@@ -17,12 +19,14 @@ class UserDataPersister implements ContextAwareDataPersisterInterface
     private $DecoratedDataPersister;
     private $userPasswordEncoder;
     private $loggerInterface;
+    private $security;
 
-    public function __construct(ContextAwareDataPersisterInterface $DecoratedDataPersister, UserPasswordEncoderInterface $userPasswordEncoder, LoggerInterface $loggerInterface)
+    public function __construct(ContextAwareDataPersisterInterface $DecoratedDataPersister, UserPasswordEncoderInterface $userPasswordEncoder, LoggerInterface $loggerInterface, Security $security)
     {
         $this->DecoratedDataPersister = $DecoratedDataPersister;
         $this->userPasswordEncoder = $userPasswordEncoder;
         $this->loggerInterface = $loggerInterface;
+        $this->security = $security;
     }
 
     public function supports($data, array $context = []): bool
@@ -54,6 +58,9 @@ class UserDataPersister implements ContextAwareDataPersisterInterface
             );
             $data->eraseCredentials();
         }
+        
+        $data->setIsMe($this->security->getUser() === $data);
+
 
         $this->DecoratedDataPersister->persist($data);
     }

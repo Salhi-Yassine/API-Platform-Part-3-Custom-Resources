@@ -1,19 +1,24 @@
 <?php
 namespace App\DataProvider;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\CollectionDataProvider;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\ItemDataProvider;
 use ApiPlatform\Core\DataProvider\ContextAwareCollectionDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use App\Entity\User;
 use Symfony\Component\Security\Core\Security;
+use ApiPlatform\Core\DataProvider\DenormalizedIdentifiersAwareItemDataProviderInterface;
 
-class UserDataProvider implements  ContextAwareCollectionDataProviderInterface, RestrictedDataProviderInterface
+
+class UserDataProvider implements  ContextAwareCollectionDataProviderInterface, DenormalizedIdentifiersAwareItemDataProviderInterface, RestrictedDataProviderInterface
 {
     private $collectionDataProvider;
+    private $itemDataProvider;
     private $security;
 
-    public function __construct(CollectionDataProvider $collectionDataProvider,Security $security)
+    public function __construct(CollectionDataProvider $collectionDataProvider,ItemDataProvider $itemDataProvider  , Security $security)
     {
         $this->collectionDataProvider = $collectionDataProvider;
+        $this->itemDataProvider = $itemDataProvider;
         $this->security = $security;
     }
 
@@ -27,6 +32,18 @@ class UserDataProvider implements  ContextAwareCollectionDataProviderInterface, 
         }
         return $users;
     }
+
+    public function getItem(string $resourceClass, /* array */ $id, string $operationName = null, array $context = [])
+    {
+        /** @var User|null $user */
+        $user = $this->itemDataProvider->getItem($resourceClass, $id, $operationName, $context);
+        if (null === $user) {
+            return null;
+        }
+        $user->setIsMe($user === $this->security->getUser());
+        return $user;
+    }
+
 
     public function supports(string $resourceClass, string $operationName = null, array $context = []): bool 
     {
