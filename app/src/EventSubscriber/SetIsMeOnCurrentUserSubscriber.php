@@ -17,7 +17,7 @@ class SetIsMeOnCurrentUserSubscriber implements EventSubscriberInterface
     public function onKernelRequest(RequestEvent $event)
     {
         // the special key where API platform puts the "data" for the current API request
-        dd($event->getRequest()->attributes->get('data'));
+        // dd($event->getRequest()->attributes->get('data'));
         if (!$event->isMasterRequest()) {
             return;
         }
