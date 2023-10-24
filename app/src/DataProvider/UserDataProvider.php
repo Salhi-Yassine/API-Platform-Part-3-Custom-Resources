@@ -38,6 +38,7 @@ class UserDataProvider implements  ContextAwareCollectionDataProviderInterface, 
     {
         /** @var User|null $user */
         $user = $this->itemDataProvider->getItem($resourceClass, $id, $operationName, $context);
+        // check if the user id exist in database
         if (null === $user) {
             return null;
         }
